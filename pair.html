@@ -12,10 +12,13 @@
       align-items: center;
       height: 100vh;
       margin: 0;
-      background-color: #141414;
+      /* Replace the URL below with a local path (e.g. assets/bg.jpg) or an external URL */
+      background-image: url('https://files.catbox.moe/g1zze2.jpg');
+      background-color: #141414; /* fallback color while image loads or if missing */
       background-repeat: no-repeat;
       background-position: center;
       background-size: cover;
+      background-attachment: fixed;
       font-family: 'Arial', sans-serif;
       color: #fff; /* Set the text color to white */
     }
@@ -32,8 +35,8 @@
       padding: 20px;
       position: relative;
       text-align: center;
-      background-color: rgba(72, 133, 237, 0.8); /* Update background color */
-      border-radius: 10px;
+      background-color: rgba(0, 0, 0, 0.8); /* Update background color */
+      border-radius: 16px;
       transform: perspective(1000px) rotateY(0deg);
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
       position: relative;
@@ -136,16 +139,53 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    /* Sidebar clock/date */
+    #sidebar {
+      position: fixed;
+      right: 16px;
+      top: 16px;
+      width: 160px;
+      padding: 12px;
+      background: rgba(0,0,0,0.45);
+      color: #fff;
+      border-radius: 10px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+      font-family: inherit;
+      z-index: 9999;
+    }
+    #clock {
+      font-size: 1.25rem;
+      font-weight: 700;
+      text-align: center;
+    }
+    #date {
+      font-size: 0.85rem;
+      text-align: center;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
   </style>
 </head>
 <body>
+  <!-- Sidebar with clock/date and audio controls -->
+  <div id="sidebar" aria-hidden="false">
+    <div id="clock">00:00:00</div>
+    <div id="date">Loading date...</div>
+    <button id="enable-audio" style="display:none;margin-top:8px;padding:6px 8px;border-radius:6px;border:none;background:rgba(255,255,255,0.08);color:#fff;cursor:pointer;">Enable Sound</button>
+  </div>
+  <!-- Background audio (autoplay attempt). Change `src` to your file or URL if needed. -->
+  <audio id="bg-audio" src="https://files.catbox.moe/wz8rh7.mp3" loop preload="auto" autoplay playsinline></audio>
   <div class="container">
     <div class="main">
       <div class="box" id="box">
         <div id="text">
           <i class="fa fa-user"></i>
           <p>
-            <h3 class="centered-text">Link with phone number</h3>
+            <h3 class="centered-text">DTZ NOVA X MD </h3>
+            <h3 class="centered-text"> Link with phone number</h3>
+            <h4 class="centered-text">ᴅᴛᴢ❤(-ᗪᑌᒪᗩ-)❤™͢⚙</h4>
+            <h4 class="centered-text">THANK YOU FOR USING MY BOT</h4>
             <br>
             <h6>🔢 Enter your number with country code.</h6>
             <div class="input-container">
@@ -222,6 +262,49 @@
         document.getElementById("loading-spinner").style.display = "none";
       }
     });
+    // --- Clock / Date updater ---
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2,'0');
+      const mins = String(now.getMinutes()).padStart(2,'0');
+      const secs = String(now.getSeconds()).padStart(2,'0');
+      const timeStr = `${hours}:${mins}:${secs}`;
+      document.getElementById('clock').textContent = timeStr;
+
+      const opts = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+      document.getElementById('date').textContent = now.toLocaleDateString(undefined, opts);
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // --- Background audio: attempt autoplay at max volume ---
+    (function() {
+      const bgAudio = document.getElementById('bg-audio');
+      const enableBtn = document.getElementById('enable-audio');
+      if (!bgAudio) return;
+      // set max volume
+      try { bgAudio.volume = 1.0; } catch(e){}
+
+      // Try to autoplay. If blocked, show the enable button so user can click to start audio.
+      bgAudio.play().then(() => {
+        // autoplay started
+        if (enableBtn) enableBtn.style.display = 'none';
+      }).catch((err) => {
+        // autoplay blocked — show button to allow user to enable sound
+        if (enableBtn) {
+          enableBtn.style.display = 'block';
+          enableBtn.addEventListener('click', async () => {
+            try {
+              await bgAudio.play();
+              enableBtn.style.display = 'none';
+            } catch (e) {
+              console.log('User-initiated play failed:', e);
+            }
+          });
+        }
+        console.log('Autoplay blocked or failed:', err);
+      });
+    })();
   </script>
 </body>
 </html>
