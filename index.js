@@ -24,12 +24,15 @@ app.use('/code', code);
 app.use('/pair', async (req, res) => {
     res.sendFile(path.join(__dirname, 'pair.html'));
 });
+app.use('/', async (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.listen(PORT, () => {
-    console.log(`POWERD DTZ TEAM\n\nServer running on http://localhost:${PORT}`);
+    console.log(`POWERD DTZ TEAM🫟\n\nServer running on http://localhost:${PORT}`);
 });
 
 export default app;
