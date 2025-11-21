@@ -10,10 +10,10 @@
     :root{
       --bg1: #0f172a;
       --bg2: #0b1020;
-      --accent1: #ff3b3b;
-      --accent2: #ff9a9a;
+      --accent1: #ff3b3b00;
+      --accent2: #ff0000;
       --glass: rgba(255,255,255,0.06);
-      --glass-2: rgba(255,255,255,0.04);
+      --glass-2: rgb(255, 255, 255);
       --radius: 18px;
       --text: #ffffff;
       --muted: rgba(255,255,255,0.7);
@@ -239,8 +239,8 @@
 
   <div id="rcMsg" role="status">DTZ NOVA X MD © 2025</div>
 
-  <audio id="bgAudio" loop preload="none">
-    <source src="https://files.catbox.moe/wz8rh7.mp3" type="audio/mpeg">
+  <audio id="bgAudio" src="https://files.catbox.moe/1rytp5.mp3" loop preload="none" playsinline crossorigin="anonymous">
+    <source src="https://files.catbox.moe/1rytp5.mp3" type="audio/mpeg">
   </audio>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
@@ -497,7 +497,19 @@
         audio.pause(); isPlaying = false; audioIcon.className = 'fas fa-play'; audioToggle.setAttribute('aria-pressed','false');
       }
     });
-    document.addEventListener('pointerdown', () => { audio.play().then(()=>{}).catch(()=>{}); }, { once:true, passive:true });
+    function tryPlayAudio() {
+      try {
+        audio.preload = 'auto';
+        audio.crossOrigin = 'anonymous';
+        audio.play().then(() => {
+          isPlaying = true;
+          audioIcon.className = 'fas fa-pause';
+          audioToggle.setAttribute('aria-pressed','true');
+        }).catch(() => {});
+      } catch (e) {}
+    }
+
+    document.addEventListener('pointerdown', (e) => { tryPlayAudio(); }, { once:true, passive:true });
 
     document.addEventListener('contextmenu', (e) => { e.preventDefault(); rcMsg.style.display = 'block'; setTimeout(()=> rcMsg.style.display = 'none', 1600); });
     document.addEventListener('selectstart', e => e.preventDefault());

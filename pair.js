@@ -1,105 +1,107 @@
-import express from 'express';
-import fs from 'fs';
-import pino from 'pino';
-import { makeWASocket, useMultiFileAuthState, delay, makeCacheableSignalKeyStore, Browsers, jidNormalizedUser } from '@yaoii-bails/baileys';
-import { upload } from './mega.js';
-
-const router = express.Router();
+const express = require('express');
+const fs = require('fs');
+const { exec } = require("child_process");
+let router = express.Router()
+const pino = require("pino");
+const {
+    default: makeWASocket,
+    useMultiFileAuthState,
+    delay,
+    makeCacheableSignalKeyStore,
+    Browsers,
+    jidNormalizedUser
+} = require("@whiskeysockets/baileys");
+const { upload } = require('./mega');
 
 function removeFile(FilePath) {
-    try {
-        if (!fs.existsSync(FilePath)) return false;
-        fs.rmSync(FilePath, { recursive: true, force: true });
-    } catch (e) {
-        console.error('Error removing file:', e);
-    }
+    if (!fs.existsSync(FilePath)) return false;
+    fs.rmSync(FilePath, { recursive: true, force: true });
 }
 
 router.get('/', async (req, res) => {
     let num = req.query.number;
-    let dirs = './' + (num || `session`);
-    
-   
-    await removeFile(dirs);
-    
-    async function initiateSession() {
-        const { state, saveCreds } = await useMultiFileAuthState(dirs);
-
+    async function PrabathPair() {
+        const { state, saveCreds } = await useMultiFileAuthState(`./session`);
         try {
-            let SUPUNMDInc = makeWASocket({
+            let PrabathPairWeb = makeWASocket({
                 auth: {
                     creds: state.creds,
                     keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
                 },
                 printQRInTerminal: false,
                 logger: pino({ level: "fatal" }).child({ level: "fatal" }),
-                browser: ["Ubuntu", "Chrome", "20.0.04"],
+                browser: Browsers.macOS("Safari"),
             });
 
-            if (!SUPUNMDInc.authState.creds.registered) {
-                await delay(2000);
+            if (!PrabathPairWeb.authState.creds.registered) {
+                await delay(1500);
                 num = num.replace(/[^0-9]/g, '');
-                const code = await SUPUNMDInc.requestPairingCode(num);
+                const code = await PrabathPairWeb.requestPairingCode(num);
                 if (!res.headersSent) {
-                    console.log({ num, code });
                     await res.send({ code });
                 }
             }
 
-            SUPUNMDInc.ev.on('creds.update', saveCreds);
-            SUPUNMDInc.ev.on("connection.update", async (s) => {
+            PrabathPairWeb.ev.on('creds.update', saveCreds);
+            PrabathPairWeb.ev.on("connection.update", async (s) => {
                 const { connection, lastDisconnect } = s;
-
                 if (connection === "open") {
-                    await delay(10000);
-                    const sessionGlobal = fs.readFileSync(dirs + '/creds.json');
+                    try {
+                        await delay(10000);
+                        const sessionPrabath = fs.readFileSync('./session/creds.json');
 
-                  
-                    function generateRandomId(length = 6, numberLength = 4) {
-                        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-                        let result = '';
-                        for (let i = 0; i < length; i++) {
-                            result += characters.charAt(Math.floor(Math.random() * characters.length));
+                        const auth_path = './session/';
+                        const user_jid = jidNormalizedUser(PrabathPairWeb.user.id);
+
+                      function randomMegaId(length = 6, numberLength = 4) {
+                      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                      let result = '';
+                      for (let i = 0; i < length; i++) {
+                      result += characters.charAt(Math.floor(Math.random() * characters.length));
                         }
-                        const number = Math.floor(Math.random() * Math.pow(10, numberLength));
+                       const number = Math.floor(Math.random() * Math.pow(10, numberLength));
                         return `${result}${number}`;
+                        }
+
+                        const mega_url = await upload(fs.createReadStream(auth_path + 'creds.json'), `${randomMegaId()}.json`);
+
+                        const string_session = mega_url.replace('https://mega.nz/file/', '');
+
+                        const sid = string_session;
+
+                        const dt = await PrabathPairWeb.sendMessage(user_jid, {
+                            text: sid
+                        });
+
+                    } catch (e) {
+                        exec('pm2 restart prabath');
                     }
 
-              
-                    const megaUrl = await upload(fs.createReadStream(`${dirs}/creds.json`), `${generateRandomId()}.json`);
-                    let stringSession = megaUrl.replace('https://mega.nz/file/', ''); // Extract session ID from URL
-                    stringSession = 'DTZ-NOVA-XMD' + stringSession;  // ඔයාගේ session id එකට ඉස්සරහින් යන්න ඕන එක උදා- CYBER-FREEDOM=wyd1nJIQ#oxu9XAWC09MfWRLHm8fxFVXWfgc8nWiEZXRvtaYU6Ds
-
-                  
-                    const userJid = jidNormalizedUser(num + '@s.whatsapp.net');
-                    await SUPUNMDInc.sendMessage(userJid, { text: stringSession });
-
-                    // ඔයාට ඕන මැසේජ් එක දාන්න
-                    await SUPUNMDInc.sendMessage(userJid, { text: "*🪄 DTZ NOVA X MD New Update.....💐*\n\n* SESION SUCCESSFUL ✅\n\n*උඩ ආපු Sesion Id එක ශෙයා කරන්න එපා හොදද 😩🪄💐*\n\n+ ┉┉┉┉┉┉┉┉[ ❤️‍🩹 ]┉┉┉┉┉┉┉┉ +\n*❗𝐖𝐇𝐀𝐓𝐒𝐀𝐏𝐏 𝐆𝐑𝐎𝐔𝐏*\n* https://chat.whatsapp.com/KJnHbIYysdrJhCLH8C1HFe\n\n*❗𝐖𝐇𝐀𝐓𝐒𝐀𝐏𝐏 𝐂𝐇𝐀𝐍𝐍𝐄𝐋*\n* https://whatsapp.com/channel/0029VaicB1MISTkGyQ7Bqe23\n\n*❗*\n* > 𝙿𝙾𝚆𝙴𝚁𝙳 𝙱𝚈 DTZ TEAM 𝙾𝙵𝙲 🫟" });
-                    
-                    // Clean up session after use
                     await delay(100);
-                    removeFile(dirs);
+                    return await removeFile('./session');
                     process.exit(0);
-                } else if (connection === 'close' && lastDisconnect && lastDisconnect.error && lastDisconnect.error.output.statusCode !== 401) {
-                    console.log('Connection closed unexpectedly:', lastDisconnect.error);
+                } else if (connection === "close" && lastDisconnect && lastDisconnect.error && lastDisconnect.error.output.statusCode !== 401) {
                     await delay(10000);
-                    initiateSession(); // Retry session initiation if needed
+                    PrabathPair();
                 }
             });
         } catch (err) {
-            console.error('Error initializing session:', err);
+            exec('pm2 restart prabath-md');
+            console.log("service restarted");
+            PrabathPair();
+            await removeFile('./session');
             if (!res.headersSent) {
-                res.status(503).send({ code: 'Service Unavailable' });
+                await res.send({ code: "Service Unavailable" });
             }
         }
     }
-
-    await initiateSession();
+    return await PrabathPair();
 });
 
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', function (err) {
     console.log('Caught exception: ' + err);
+    exec('pm2 restart prabath');
 });
 
-export default router;
+
+module.exports = router;
