@@ -1,23 +1,27 @@
 {
-"name": "web-pair",
+"name": "Robin-web-pair",
     "version": "0.0.1",
     "description": "A multi functional whatsapp bot Web paircode.",
     "main": "index.js",
     "scripts": {
-      "start": "pm2 start index.js --deep-monitoring --attach --name prabath",
-      "stop": "pm2 stop prabath",
-     "restart": "pm2 restart prabath"
+      "start": "pm2 start index.js --deep-monitoring --attach --name Robin",
+      "stop": "pm2 stop robin",
+     "restart": "pm2 restart robin"
     },
   "dependencies": {
-    "@whiskeysockets/baileys":            "npm:dgxeon-soket@^5.0.0",
-    "qrcode": "^1.5.3",
-    "awesome-phonenumber": "^2.64.0",
-    "pino": "^8.1.0",
-    "phone" : "3.1.30",
-    "body-parser": "^1.20.1",
-    "express": "^4.18.1",
-    "path": "^0.12.7",
-    "megajs": "^1.1.0",
-    "pm2": "^5.2.0"
+  "baileys": "npm:@elrayyxml/baileys@latest",
+    "qrcode": "latest",
+    "awesome-phonenumber": "latest",
+    "pino": "latest",
+    "phone" : "latest",
+    "body-parser": "latest",
+    "express": "latest",
+    "path": "latest",
+    "megajs": "latest",
+    "pm2": "latest",
+    "rimraf": "latest",
+    "@eslint/config-array": "latest",
+    "@eslint/object-schema": "latest",
+    "eslint": "latest"
    }
 }
