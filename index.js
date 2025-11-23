@@ -2,35 +2,64 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import dotenv from 'dotenv';
 
-// Importing the 'pair' module
-import code from './pair.js';
+dotenv.config();
 
 const app = express();
-
-// Resolve the current directory path in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const PORT = process.env.PORT || 3000;
 
-const PORT = process.env.PORT || 8000;
-
-import('events').then(events => {
-    events.EventEmitter.defaultMaxListeners = 500;
+// Increase timeout for Replit
+app.use((req, res, next) => {
+    res.setTimeout(60000, () => {
+        console.log('Request timed out');
+        res.status(503).json({ error: 'Request timeout' });
+    });
+    next();
 });
 
-app.use('/code', code);
-app.use('/pair', async (req, res) => {
-    res.sendFile(path.join(__dirname, 'pair.html'));
-});
-app.use('/', async (req, res) => {
-    res.sendFile(path.join(__dirname, 'main.html'));
-});
+// Static files middleware
+app.use(express.static(path.join(__dirname, 'public')));
 
+// Body parser middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.listen(PORT, () => {
-    console.log(`DTZ NOVA XMD PRIVET Server running on http://localhost:${PORT}`);
+// Routes
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'main.html'));
+});
+
+app.get('/pair', (req, res) => {
+    res.sendFile(path.join(__dirname, 'pair.html'));
+});
+
+// Health check endpoint for Replit
+app.get('/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'OK', 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Error:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+});
+
+// 404 handler
+app.use((req, res) => {
+    res.status(404).json({ error: 'Route not found' });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 DTZ NOVA X MD running on port ${PORT}`);
+    console.log(`📱 Main page: http://localhost:${PORT}`);
+    console.log(`🔗 Pair page: http://localhost:${PORT}/pair`);
 });
 
 export default app;
