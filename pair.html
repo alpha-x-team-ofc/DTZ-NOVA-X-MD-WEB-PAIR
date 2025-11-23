@@ -14,6 +14,7 @@
             --accent: #05e6ff;
             --success: #00ff88;
             --error: #ff4444;
+            --warning: #ffaa00;
         }
 
         * {
@@ -44,7 +45,7 @@
         }
 
         .card {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             border-radius: 15px;
             padding: 30px;
             border: 2px solid var(--primary);
@@ -69,7 +70,7 @@
 
         .title {
             font-size: 1.5rem;
-            background: linear-gradient(to right, var(--primary), var(--accent));
+            background: linear-gradient(to right, var(--primary), var(--light));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -121,8 +122,8 @@
             font-size: 16px;
         }
 
-        .btn:hover {
-            background: var(--accent);
+        .btn:hover:not(:disabled) {
+            background: var(--light);
             transform: translateY(-2px);
             box-shadow: 0 5px 15px var(--primary);
         }
@@ -136,26 +137,29 @@
         .result {
             margin-top: 20px;
             text-align: center;
-            min-height: 60px;
+            min-height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-direction: column;
         }
 
         .code-box {
             background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
+            padding: 15px 20px;
             border-radius: 8px;
             border: 1px dashed var(--primary);
             font-family: monospace;
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
+            letter-spacing: 2px;
         }
 
         .code-box:hover {
             background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
         }
 
         .code-box.copied {
@@ -167,6 +171,28 @@
             font-size: 0.8rem;
             color: var(--light);
             margin-top: 8px;
+        }
+
+        .info-box {
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid var(--warning);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+            color: var(--warning);
+        }
+
+        .loading {
+            color: var(--primary);
+        }
+
+        .error {
+            color: var(--error);
+        }
+
+        .success {
+            color: var(--success);
         }
 
         .back-btn {
@@ -183,27 +209,64 @@
             color: var(--primary);
         }
 
-        .loading {
-            color: var(--primary);
+        .steps {
+            margin: 20px 0;
+            text-align: left;
         }
 
-        .error {
-            color: var(--error);
+        .step {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: var(--light);
         }
 
-        .success {
-            color: var(--success);
+        .step-number {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            color: black;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            margin-right: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        /* Audio visualizer */
+        .audio-visualizer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            opacity: 0.6;
+            z-index: 100;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
         }
     </style>
 </head>
 <body>
     <div class="bg-animation"></div>
+    <div class="audio-visualizer"></div>
     
     <div class="card">
         <div class="header">
             <img src="https://files.catbox.moe/avflwa.jpg" alt="DTZ NOVA X MD" class="logo">
             <div class="title">DTZ NOVA X MD</div>
-            <div class="subtitle">Phone Number Pairing</div>
+            <div class="subtitle">WhatsApp Pairing System</div>
+        </div>
+
+        <div class="info-box">
+            <i class="fas fa-info-circle"></i> 
+            <strong>Cloud Environment:</strong> Connection may close after code generation. This is normal.
         </div>
 
         <div class="input-group">
@@ -218,14 +281,21 @@
         </div>
 
         <div class="input-group">
-            <label class="input-label">Phone Number</label>
+            <label class="input-label">Phone Number (without country code)</label>
             <input type="tel" class="input-field" id="phoneNumber" 
                    placeholder="77 123 4567" inputmode="numeric" maxlength="15">
         </div>
 
         <button class="btn" id="getCodeBtn">
-            <i class="fas fa-key"></i> Generate Pair Code
+            <i class="fas fa-key"></i> Generate Pairing Code
         </button>
+
+        <div class="steps">
+            <div class="step"><span class="step-number">1</span> Enter your phone number</div>
+            <div class="step"><span class="step-number">2</span> Click generate code</div>
+            <div class="step"><span class="step-number">3</span> Use code in WhatsApp</div>
+            <div class="step"><span class="step-number">4</span> Bot will auto-connect</div>
+        </div>
 
         <div class="result" id="result">
             <!-- Results will appear here -->
@@ -236,11 +306,40 @@
         </a>
     </div>
 
+    <!-- Background Audio -->
+    <audio id="bgMusic" loop>
+        <source src="https://files.catbox.moe/od0rav.mp3" type="audio/mpeg">
+    </audio>
+
     <script>
         const countryCode = document.getElementById('countryCode');
         const phoneNumber = document.getElementById('phoneNumber');
         const getCodeBtn = document.getElementById('getCodeBtn');
         const result = document.getElementById('result');
+
+        // Auto-play background music
+        function playBackgroundMusic() {
+            const audio = document.getElementById('bgMusic');
+            audio.volume = 0.3; // Set volume to 30%
+            
+            const playAudio = () => {
+                audio.play().catch(e => {
+                    console.log('Auto-play prevented');
+                });
+            };
+            
+            // Try to play immediately
+            playAudio();
+            
+            // Also try on user interaction
+            document.addEventListener('click', () => {
+                playAudio();
+            }, { once: true });
+            
+            document.addEventListener('touchstart', () => {
+                playAudio();
+            }, { once: true });
+        }
 
         // Format phone number input
         phoneNumber.addEventListener('input', function(e) {
@@ -259,28 +358,28 @@
             const fullNumber = countryCode.value + rawNumber;
 
             if (!rawNumber || rawNumber.length < 7) {
-                showResult('Please enter a valid phone number', 'error');
+                showResult('Please enter a valid phone number (at least 7 digits)', 'error');
                 return;
             }
 
             getCodeBtn.disabled = true;
-            getCodeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
-            showResult('Connecting to WhatsApp...', 'loading');
+            getCodeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating Code...';
+            showResult('<i class="fas fa-sync fa-spin"></i> Connecting to WhatsApp servers...', 'loading');
 
             try {
                 const response = await fetch(`/api/code?number=${encodeURIComponent(fullNumber)}`);
                 const data = await response.json();
 
-                if (data.code) {
+                if (data.success && data.code) {
                     showCode(data.code);
                 } else {
-                    showResult(data.error || 'Failed to generate code', 'error');
+                    showResult(`<i class="fas fa-exclamation-triangle"></i> ${data.error || 'Failed to generate code'}`, 'error');
                 }
             } catch (error) {
-                showResult('Network error. Please try again.', 'error');
+                showResult('<i class="fas fa-wifi"></i> Network error. Please try again.', 'error');
             } finally {
                 getCodeBtn.disabled = false;
-                getCodeBtn.innerHTML = '<i class="fas fa-key"></i> Generate Pair Code';
+                getCodeBtn.innerHTML = '<i class="fas fa-key"></i> Generate Pairing Code';
             }
         });
 
@@ -291,10 +390,15 @@
         function showCode(code) {
             result.innerHTML = `
                 <div style="text-align: center;">
+                    <div>✅ Pairing Code Generated!</div>
                     <div class="code-box" onclick="copyCode('${code}')" id="codeBox">
                         <i class="fas fa-key"></i> ${code}
                     </div>
-                    <div class="hint">Click to copy pairing code</div>
+                    <div class="hint">Click the code to copy it</div>
+                    <div style="margin-top: 15px; font-size: 0.8rem; color: var(--light);">
+                        <i class="fas fa-mobile-alt"></i> 
+                        Go to WhatsApp → Linked Devices → Link a Device → Enter this code
+                    </div>
                 </div>
             `;
         }
@@ -303,7 +407,7 @@
             navigator.clipboard.writeText(code).then(() => {
                 const codeBox = document.getElementById('codeBox');
                 codeBox.classList.add('copied');
-                codeBox.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                codeBox.innerHTML = '<i class="fas fa-check"></i> Copied to Clipboard!';
                 setTimeout(() => {
                     codeBox.classList.remove('copied');
                     codeBox.innerHTML = `<i class="fas fa-key"></i> ${code}`;
@@ -317,6 +421,12 @@
                 getCodeBtn.click();
             }
         });
+
+        // Auto-focus on phone number
+        phoneNumber.focus();
+
+        // Start background music
+        playBackgroundMusic();
     </script>
 </body>
 </html>
