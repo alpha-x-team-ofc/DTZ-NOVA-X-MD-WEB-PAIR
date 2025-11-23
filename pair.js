@@ -81,17 +81,29 @@ router.get('/', async (req, res) => {
                     // Clean up session after use
                     await delay(100);
                     removeFile(dirs);
-                    process.exit(0);
+                    // Instead of exiting, just clean up and allow new sessions
+                    console.log('Session cleaned up for', num);
                 } else if (connection === 'close' && lastDisconnect && lastDisconnect.error && lastDisconnect.error.output.statusCode !== 401) {
                     console.log('Connection closed unexpectedly:', lastDisconnect.error);
-                    await delay(10000);
-                    initiateSession(); // Retry session initiation if needed
+                    // Limit retries to avoid infinite loop
+                    if (!s.retryCount) s.retryCount = 0;
+                    s.retryCount++;
+                    if (s.retryCount <= 3) {
+                        console.log(`Retrying session initiation (attempt ${s.retryCount})...`);
+                        await delay(10000);
+                        initiateSession();
+                    } else {
+                        console.log('Max retry attempts reached. Please try again later.');
+                        if (!res.headersSent) {
+                            res.status(408).send({ error: 'Connection closed after multiple attempts. Please retry.' });
+                        }
+                    }
                 }
             });
         } catch (err) {
             console.error('Error initializing session:', err);
             if (!res.headersSent) {
-                res.status(503).send({ code: 'Service Unavailable' });
+                res.status(503).send({ error: 'Service Unavailable. Please retry.' });
             }
         }
     }
