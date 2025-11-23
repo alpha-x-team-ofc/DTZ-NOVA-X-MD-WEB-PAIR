@@ -151,10 +151,29 @@
             .buttons { flex-direction: column; align-items: center; }
             .btn { width: 100%; max-width: 250px; justify-content: center; }
         }
+
+        /* Audio visualizer */
+        .audio-visualizer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            opacity: 0.6;
+            z-index: 100;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
     </style>
 </head>
 <body>
     <div class="bg-animation" id="bg"></div>
+    <div class="audio-visualizer"></div>
     
     <div class="container">
         <header>
@@ -191,6 +210,11 @@
         </footer>
     </div>
 
+    <!-- Background Audio -->
+    <audio id="bgMusic" loop>
+        <source src="https://files.catbox.moe/od0rav.mp3" type="audio/mpeg">
+    </audio>
+
     <script>
         // Simple particles for background
         function createParticles() {
@@ -207,7 +231,39 @@
                 bg.appendChild(particle);
             }
         }
+
+        // Auto-play background music
+        function playBackgroundMusic() {
+            const audio = document.getElementById('bgMusic');
+            audio.volume = 0.3; // Set volume to 30%
+            
+            // Auto-play with user interaction
+            const playAudio = () => {
+                audio.play().catch(e => {
+                    console.log('Auto-play prevented, waiting for user interaction');
+                });
+            };
+            
+            // Try to play immediately
+            playAudio();
+            
+            // Also try on user interaction
+            document.addEventListener('click', () => {
+                playAudio();
+            }, { once: true });
+            
+            document.addEventListener('touchstart', () => {
+                playAudio();
+            }, { once: true });
+            
+            document.addEventListener('keydown', () => {
+                playAudio();
+            }, { once: true });
+        }
+
+        // Initialize
         createParticles();
+        playBackgroundMusic();
     </script>
 </body>
 </html>
