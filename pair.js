@@ -1,107 +1,151 @@
 import express from 'express';
-import fs from 'fs';
+import fs from 'fs/promises';
 import pino from 'pino';
-import { makeWASocket, useMultiFileAuthState, delay, makeCacheableSignalKeyStore, Browsers, jidNormalizedUser } from '@whiskeysockets/baileys';
-import { upload } from './mega.js';
+import { 
+    makeWASocket, 
+    useMultiFileAuthState, 
+    delay, 
+    makeCacheableSignalKeyStore, 
+    jidNormalizedUser 
+} from '@whiskeysockets/baileys';
 
 const router = express.Router();
 
-// Ensure the session directory exists
-function removeFile(FilePath) {
+// Session timeout (2 minutes for Render)
+const SESSION_TIMEOUT = 120000;
+const activeSessions = new Map();
+
+async function cleanupSession(sessionDir) {
     try {
-        if (!fs.existsSync(FilePath)) return false;
-        fs.rmSync(FilePath, { recursive: true, force: true });
-    } catch (e) {
-        console.error('Error removing file:', e);
+        await fs.rm(sessionDir, { recursive: true, force: true });
+        activeSessions.delete(sessionDir);
+        console.log(`Cleaned up session: ${sessionDir}`);
+    } catch (error) {
+        console.log('Cleanup warning:', error.message);
     }
 }
 
 router.get('/', async (req, res) => {
-    let num = req.query.number;
-    let dirs = './' + (num || `session`);
+    const { number } = req.query;
     
-    // Remove existing session if present
-    await removeFile(dirs);
-    
-    async function initiateSession() {
-        const { state, saveCreds } = await useMultiFileAuthState(dirs);
-
-        try {
-            let SUPUNMDInc = makeWASocket({
-                auth: {
-                    creds: state.creds,
-                    keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
-                },
-                printQRInTerminal: false,
-                logger: pino({ level: "fatal" }).child({ level: "fatal" }),
-                browser: ["Ubuntu", "Chrome", "20.0.04"],
-            });
-
-            if (!SUPUNMDInc.authState.creds.registered) {
-                await delay(2000);
-                num = num.replace(/[^0-9]/g, '');
-                const code = await SUPUNMDInc.requestPairingCode(num);
-                if (!res.headersSent) {
-                    console.log({ num, code });
-                    await res.send({ code });
-                }
-            }
-
-            SUPUNMDInc.ev.on('creds.update', saveCreds);
-            SUPUNMDInc.ev.on("connection.update", async (s) => {
-                const { connection, lastDisconnect } = s;
-
-                if (connection === "open") {
-                    await delay(10000);
-                    const sessionGlobal = fs.readFileSync(dirs + '/creds.json');
-
-                    // Helper to generate a random Mega file ID
-                    function generateRandomId(length = 6, numberLength = 4) {
-                        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-                        let result = '';
-                        for (let i = 0; i < length; i++) {
-                            result += characters.charAt(Math.floor(Math.random() * characters.length));
-                        }
-                        const number = Math.floor(Math.random() * Math.pow(10, numberLength));
-                        return `${result}${number}`;
-                    }
-
-                    // Upload session file to Mega
-                    const megaUrl = await upload(fs.createReadStream(`${dirs}/creds.json`), `${generateRandomId()}.json`);
-                    let stringSession = megaUrl.replace('https://mega.nz/file/', ''); // Extract session ID from URL
-                    stringSession = 'DTZ-NOVA-X-MD=' + stringSession;  // Prepend your name to the session ID
-
-                    // Send the session ID to the target number
-                    const userJid = jidNormalizedUser(num + '@s.whatsapp.net');
-                    await SUPUNMDInc.sendMessage(userJid, { text: stringSession });
-
-                    // Send confirmation message
-                    await SUPUNMDInc.sendMessage(userJid, { text: "DTZ NOVA X MD 𝐒𝐄𝐒𝐒𝐈𝐎𝐍 𝐒𝐔𝐂𝐂𝐄𝐒𝐅𝐔𝐋𝐋👇*\n\n*⭕ WHATSAPP CHANNEL :https://chat.whatsapp.com/KJnHbIYysdrJhCLH8C1HFe*\n\n> \n\n*⭕Contact Owner :*\n\n> wa.me/94752978237\n\n\n🚫 *𝗗𝗢𝗡𝗧 𝗦𝗛𝗔𝗥𝗘 𝗬𝗢𝗨𝗥 𝗦𝗘𝗦𝗦𝗜𝗢𝗡 𝗜𝗗* 🚫" });
-                    
-                    // Clean up session after use
-                    await delay(100);
-                    removeFile(dirs);
-                    process.exit(0);
-                } else if (connection === 'close' && lastDisconnect && lastDisconnect.error && lastDisconnect.error.output.statusCode !== 401) {
-                    console.log('Connection closed unexpectedly:', lastDisconnect.error);
-                    await delay(10000);
-                    initiateSession(); // Retry session initiation if needed
-                }
-            });
-        } catch (err) {
-            console.error('Error initializing session:', err);
-            if (!res.headersSent) {
-                res.status(503).send({ code: 'Service Unavailable' });
-            }
-        }
+    if (!number) {
+        return res.status(400).json({ error: 'Phone number is required' });
     }
 
-    await initiateSession();
+    const cleanNumber = number.replace(/\D/g, '');
+    const sessionDir = `./session_${cleanNumber}`;
+    
+    // Set response timeout
+    res.setTimeout(SESSION_TIMEOUT, () => {
+        if (!res.headersSent) {
+            res.status(408).json({ error: 'Request timeout' });
+        }
+    });
+
+    try {
+        // Cleanup existing session
+        if (activeSessions.has(sessionDir)) {
+            await cleanupSession(sessionDir);
+        }
+
+        const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
+        
+        const socketConfig = {
+            auth: {
+                creds: state.creds,
+                keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
+            },
+            printQRInTerminal: false,
+            logger: pino({ level: "fatal" }).child({ level: "fatal" }),
+            browser: ["DTZ-NOVA-X-MD", "Chrome", "1.0.0"],
+        };
+
+        const bot = makeWASocket(socketConfig);
+
+        if (!bot.authState.creds.registered) {
+            await delay(2000);
+            const pairingCode = await bot.requestPairingCode(cleanNumber);
+            
+            if (!res.headersSent) {
+                res.json({ 
+                    code: pairingCode,
+                    message: 'Pairing code generated successfully'
+                });
+            }
+
+            // Auto-cleanup after timeout
+            const timeoutId = setTimeout(() => {
+                cleanupSession(sessionDir);
+                process.exit(0);
+            }, SESSION_TIMEOUT);
+
+            activeSessions.set(sessionDir, { bot, timeoutId });
+        }
+
+        bot.ev.on('creds.update', saveCreds);
+        
+        bot.ev.on("connection.update", async (update) => {
+            const { connection, lastDisconnect } = update;
+
+            if (connection === "open") {
+                console.log(`✅ Connected successfully to ${cleanNumber}`);
+                
+                try {
+                    await delay(5000);
+                    
+                    // Send success message
+                    const userJid = jidNormalizedUser(cleanNumber + '@s.whatsapp.net');
+                    await bot.sendMessage(userJid, { 
+                        text: `✅ *DTZ NOVA X MD CONNECTED*\n\n📱 Your WhatsApp is now connected to DTZ NOVA X MD\n\n🔗 Channel: https://chat.whatsapp.com/KJnHbIYysdrJhCLH8C1HFe\n\n👤 Owner: wa.me/94752978237\n\n⚠️ *DO NOT SHARE YOUR SESSION*` 
+                    });
+                    
+                    console.log(`📨 Success message sent to ${cleanNumber}`);
+                    
+                    // Cleanup and exit
+                    await cleanupSession(sessionDir);
+                    setTimeout(() => process.exit(0), 1000);
+                    
+                } catch (msgError) {
+                    console.log('Message send error:', msgError.message);
+                }
+
+            } else if (connection === 'close') {
+                console.log(`❌ Connection closed for ${cleanNumber}`);
+                await cleanupSession(sessionDir);
+            }
+        });
+
+    } catch (error) {
+        console.error('Session error:', error);
+        
+        // Cleanup on error
+        await cleanupSession(sessionDir);
+        
+        if (!res.headersSent) {
+            res.status(500).json({ 
+                error: 'Failed to generate pairing code',
+                details: error.message 
+            });
+        }
+    }
 });
 
-// Global uncaught exception handler
-process.on('uncaughtException', (err) => {
-    console.log('Caught exception: ' + err);
+// Cleanup on process exit
+process.on('SIGINT', async () => {
+    console.log('🛑 Shutting down...');
+    for (const [sessionDir, { timeoutId }] of activeSessions) {
+        clearTimeout(timeoutId);
+        await cleanupSession(sessionDir);
+    }
+    process.exit(0);
+});
+
+process.on('uncaughtException', (error) => {
+    console.log('Uncaught Exception:', error.message);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.log('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
 export default router;
