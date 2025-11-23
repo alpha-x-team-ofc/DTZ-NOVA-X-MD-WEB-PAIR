@@ -9,25 +9,24 @@ dotenv.config();
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
-// Increase timeout for Replit
+// Security middleware
 app.use((req, res, next) => {
-    res.setTimeout(60000, () => {
-        console.log('Request timed out');
-        res.status(503).json({ error: 'Request timeout' });
-    });
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
     next();
 });
 
-// Static files middleware
+// Body parser with limits
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+
+// Static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Body parser middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// Routes
+// Main routes
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'main.html'));
 });
@@ -36,30 +35,35 @@ app.get('/pair', (req, res) => {
     res.sendFile(path.join(__dirname, 'pair.html'));
 });
 
-// Health check endpoint for Replit
-app.get('/health', (req, res) => {
-    res.status(200).json({ 
-        status: 'OK', 
+// API health check
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'healthy',
+        service: 'DTZ NOVA X MD',
         timestamp: new Date().toISOString(),
-        uptime: process.uptime()
+        uptime: Math.floor(process.uptime())
     });
 });
 
-// Error handling middleware
+// Pair code API endpoint
+app.use('/api/code', (await import('./pair.js')).default);
+
+// Error handling
 app.use((err, req, res, next) => {
-    console.error('Error:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('Server Error:', err);
+    res.status(500).json({ error: 'Internal server error' });
 });
 
 // 404 handler
 app.use((req, res) => {
-    res.status(404).json({ error: 'Route not found' });
+    res.status(404).json({ error: 'Endpoint not found' });
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 DTZ NOVA X MD running on port ${PORT}`);
-    console.log(`📱 Main page: http://localhost:${PORT}`);
-    console.log(`🔗 Pair page: http://localhost:${PORT}/pair`);
+    console.log(`🚀 DTZ NOVA X MD Server Started`);
+    console.log(`📍 Port: ${PORT}`);
+    console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`⏰ Started at: ${new Date().toLocaleString()}`);
 });
 
 export default app;
