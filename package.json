@@ -1,14 +1,16 @@
 {
   "name": "dtz-nova-x-md",
-  "version": "2.0.0",
-  "description": "DTZ NOVA X MD - Advanced WhatsApp Bot with QR Code and Phone Pairing",
+  "version": "2.1.0",
+  "description": "DTZ NOVA X MD - Advanced WhatsApp Bot with Dual Pairing (QR Code & Phone Number)",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "node index.js",
+    "dev": "node --watch index.js",
     "test": "echo \"No tests specified\" && exit 0",
-    "build": "echo \"No build process required\""
+    "build": "echo \"No build process required\"",
+    "lint": "echo \"No linting configured\"",
+    "clean": "rm -rf sessions session_* ./session_*"
   },
   "keywords": [
     "whatsapp",
@@ -16,9 +18,13 @@
     "multidevice",
     "automation",
     "qr-code",
-    "pairing",
+    "phone-pairing",
     "baileys",
-    "whatsapp-api"
+    "whatsapp-api",
+    "whatsapp-bot",
+    "nodejs",
+    "express",
+    "web-pairing"
   ],
   "author": {
     "name": "Dulina Nethmira",
@@ -34,7 +40,7 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alpha-x-team-ofc/DTZ-NOVA-X-MD"
+    "url": "https://github.com/alpha-x-team-ofc/DTZ-NOVA-X-MD.git"
   },
   "homepage": "https://github.com/alpha-x-team-ofc/DTZ-NOVA-X-MD#readme",
   "bugs": {
@@ -52,12 +58,16 @@
     "qrcode": "^1.5.4",
     "dotenv": "^16.4.5"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/express": "^4.17.0"
+  },
   "optionalDependencies": {},
   "peerDependencies": {},
   "bundledDependencies": [],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "files": [
     "index.js",
@@ -65,7 +75,8 @@
     "main.html",
     "pair.html",
     ".env.example",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "os": [
     "linux",
@@ -75,5 +86,10 @@
   "cpu": [
     "x64",
     "arm64"
-  ]
+  ],
+  "config": {
+    "port": 10000,
+    "session_timeout": 60000,
+    "max_sessions": 5
+  }
 }
