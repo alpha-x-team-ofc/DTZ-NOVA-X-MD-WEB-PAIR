@@ -12,6 +12,9 @@
             --dark: #000000;
             --light: #05e6ff;
             --accent: #05e6ff;
+            --success: #00ff88;
+            --error: #ff4444;
+            --warning: #ffaa00;
         }
 
         * {
@@ -110,14 +113,128 @@
             margin-bottom: 20px;
         }
 
-        .buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 30px;
+        /* Pairing Methods Tabs */
+        .pairing-methods {
+            margin: 30px 0;
         }
 
+        .method-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            padding: 12px 25px;
+            border: 2px solid var(--primary);
+            background: transparent;
+            color: var(--light);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: black;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* QR Code Section */
+        .qr-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .qr-code {
+            max-width: 200px;
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            padding: 10px;
+            background: white;
+            margin: 0 auto;
+        }
+
+        /* Phone Number Section */
+        .phone-input-group {
+            margin: 20px 0;
+            text-align: left;
+            max-width: 300px;
+            margin: 20px auto;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--light);
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        /* Steps */
+        .steps {
+            margin: 20px 0;
+            text-align: left;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+
+        .step {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-number {
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            color: black;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        /* Buttons */
         .btn {
             padding: 12px 25px;
             border-radius: 25px;
@@ -130,6 +247,8 @@
             transition: all 0.3s ease;
             border: 2px solid var(--primary);
             background: rgba(0, 0, 0, 0.8);
+            cursor: pointer;
+            margin: 10px 5px;
         }
 
         .btn:hover {
@@ -137,6 +256,70 @@
             box-shadow: 0 5px 15px var(--primary);
             background: var(--primary);
             color: black;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Status Messages */
+        .status-message {
+            margin: 15px 0;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .status-loading {
+            background: rgba(5, 230, 255, 0.1);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .status-success {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .status-error {
+            background: rgba(255, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        /* Code Box */
+        .code-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 1px dashed var(--primary);
+            font-family: monospace;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+            margin: 10px 0;
+        }
+
+        .code-box:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .code-box.copied {
+            background: var(--success);
+            color: black;
+        }
+
+        .hint {
+            font-size: 0.8rem;
+            color: var(--light);
+            margin-top: 8px;
         }
 
         footer {
@@ -148,8 +331,8 @@
 
         @media (max-width: 768px) {
             .logo { flex-direction: column; text-align: center; }
-            .buttons { flex-direction: column; align-items: center; }
-            .btn { width: 100%; max-width: 250px; justify-content: center; }
+            .method-tabs { flex-direction: column; align-items: center; }
+            .tab-btn { width: 100%; max-width: 250px; }
         }
 
         /* Audio visualizer */
@@ -190,18 +373,110 @@
             <img src="https://files.catbox.moe/g1zze2.jpg" alt="Feature" class="feature-img">
             
             <h2>Advanced WhatsApp Bot Solution</h2>
-            <p>DTZ NOVA X MD offers fast, reliable, and feature-rich MultiDevice WhatsApp automation with easy pairing and powerful features.</p>
-            
-            <div class="buttons">
-                <a href="/pair" class="btn">
-                    <i class="fas fa-link"></i> Get Pair Code
-                </a>
-                <a href="https://wa.me/94752978237" class="btn" target="_blank">
-                    <i class="fas fa-user"></i> Contact Owner
-                </a>
-                <a href="https://github.com/alpha-x-team-ofc/DTZ-NOVA-X-MD" class="btn" target="_blank">
-                    <i class="fab fa-github"></i> GitHub
-                </a>
+            <p>Connect your WhatsApp instantly using QR code or phone number pairing</p>
+
+            <!-- Pairing Methods Section -->
+            <div class="pairing-methods">
+                <div class="method-tabs">
+                    <button class="tab-btn active" data-tab="qr">
+                        <i class="fas fa-qrcode"></i> QR Code
+                    </button>
+                    <button class="tab-btn" data-tab="phone">
+                        <i class="fas fa-mobile-alt"></i> Phone Number
+                    </button>
+                </div>
+
+                <!-- QR Code Tab -->
+                <div class="tab-content active" id="qr-tab">
+                    <div class="steps">
+                        <div class="step">
+                            <span class="step-number">1</span>
+                            <span>Click "Generate QR Code" below</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">2</span>
+                            <span>Open WhatsApp → Settings → Linked Devices</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">3</span>
+                            <span>Tap "Link a Device" and scan QR code</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">4</span>
+                            <span>Bot will auto-connect instantly</span>
+                        </div>
+                    </div>
+
+                    <button class="btn" id="generateQrBtn">
+                        <i class="fas fa-qrcode"></i> Generate QR Code
+                    </button>
+
+                    <div class="qr-container" id="qrContainer">
+                        <!-- QR Code will appear here -->
+                    </div>
+
+                    <div id="qrStatus"></div>
+                </div>
+
+                <!-- Phone Number Tab -->
+                <div class="tab-content" id="phone-tab">
+                    <div class="steps">
+                        <div class="step">
+                            <span class="step-number">1</span>
+                            <span>Enter your phone number below</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">2</span>
+                            <span>Click "Get Pairing Code"</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">3</span>
+                            <span>Use the code in WhatsApp Linked Devices</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">4</span>
+                            <span>Bot will connect and send confirmation</span>
+                        </div>
+                    </div>
+
+                    <div class="phone-input-group">
+                        <label class="input-label">Country Code</label>
+                        <select class="input-field" id="countryCode">
+                            <option value="94">Sri Lanka (+94)</option>
+                            <option value="91">India (+91)</option>
+                            <option value="1">USA/Canada (+1)</option>
+                            <option value="44">UK (+44)</option>
+                            <option value="61">Australia (+61)</option>
+                        </select>
+                    </div>
+
+                    <div class="phone-input-group">
+                        <label class="input-label">Phone Number (without country code)</label>
+                        <input type="tel" class="input-field" id="phoneNumber" 
+                               placeholder="77 123 4567" inputmode="numeric" maxlength="15">
+                    </div>
+
+                    <button class="btn" id="getCodeBtn">
+                        <i class="fas fa-key"></i> Get Pairing Code
+                    </button>
+
+                    <div id="phoneResult"></div>
+                </div>
+            </div>
+
+            <!-- Additional Links -->
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <div class="buttons">
+                    <a href="https://wa.me/94752978237" class="btn" target="_blank">
+                        <i class="fas fa-headset"></i> Contact Support
+                    </a>
+                    <a href="https://chat.whatsapp.com/KJnHbIYysdrJhCLH8C1HFe" class="btn" target="_blank">
+                        <i class="fas fa-users"></i> Join Group
+                    </a>
+                    <a href="https://github.com/alpha-x-team-ofc/DTZ-NOVA-X-MD" class="btn" target="_blank">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                </div>
             </div>
         </main>
 
@@ -232,38 +507,211 @@
             }
         }
 
+        // Tab switching functionality
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update active tab button
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Show active tab content
+                const tabName = btn.getAttribute('data-tab');
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+                
+                // Clear previous results
+                document.getElementById('qrStatus').innerHTML = '';
+                document.getElementById('phoneResult').innerHTML = '';
+            });
+        });
+
+        // QR Code Generation
+        document.getElementById('generateQrBtn').addEventListener('click', async function() {
+            const btn = this;
+            const qrContainer = document.getElementById('qrContainer');
+            const qrStatus = document.getElementById('qrStatus');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            qrStatus.innerHTML = '<div class="status-message status-loading"><i class="fas fa-sync fa-spin"></i> Creating WhatsApp session...</div>';
+            qrContainer.innerHTML = '';
+
+            try {
+                const response = await fetch('/api/code/qr');
+                const data = await response.json();
+
+                if (data.success && data.qrCode) {
+                    // Display QR Code
+                    qrContainer.innerHTML = `
+                        <img src="${data.qrCode}" alt="WhatsApp QR Code" class="qr-code">
+                        <div class="hint">Scan this QR code with WhatsApp</div>
+                    `;
+                    
+                    qrStatus.innerHTML = '<div class="status-message status-success"><i class="fas fa-check-circle"></i> QR Code generated! Scan it with WhatsApp.</div>';
+                    
+                    // Check connection status periodically
+                    if (data.sessionId) {
+                        checkQrConnectionStatus(data.sessionId);
+                    }
+
+                    // Update button to allow regeneration
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-sync"></i> Generate New QR';
+
+                } else {
+                    qrStatus.innerHTML = `<div class="status-message status-error"><i class="fas fa-exclamation-triangle"></i> ${data.error || 'Failed to generate QR code'}</div>`;
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-qrcode"></i> Generate QR Code';
+                }
+            } catch (error) {
+                qrStatus.innerHTML = '<div class="status-message status-error"><i class="fas fa-wifi"></i> Network error. Please try again.</div>';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-qrcode"></i> Generate QR Code';
+            }
+        });
+
+        // Phone Number Pairing
+        document.getElementById('getCodeBtn').addEventListener('click', async function() {
+            const rawNumber = document.getElementById('phoneNumber').value.replace(/\s/g, '');
+            const fullNumber = document.getElementById('countryCode').value + rawNumber;
+            const result = document.getElementById('phoneResult');
+            const btn = this;
+
+            if (!rawNumber || rawNumber.length < 7) {
+                result.innerHTML = '<div class="status-message status-error">Please enter a valid phone number (at least 7 digits)</div>';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            result.innerHTML = '<div class="status-message status-loading"><i class="fas fa-sync fa-spin"></i> Connecting to WhatsApp...</div>';
+
+            try {
+                const response = await fetch(`/api/code/phone?number=${encodeURIComponent(fullNumber)}`);
+                const data = await response.json();
+
+                if (data.success && data.code) {
+                    showPhoneCode(data.code);
+                } else {
+                    result.innerHTML = `<div class="status-message status-error"><i class="fas fa-exclamation-triangle"></i> ${data.error || data.message || 'Failed to generate code'}</div>`;
+                    if (data.qrEndpoint) {
+                        result.innerHTML += `<div class="status-message status-loading" style="margin-top: 10px;">Try the <a href="javascript:switchToQr()" style="color: var(--primary); font-weight: 600;">QR Code method</a> for better reliability.</div>`;
+                    }
+                }
+            } catch (error) {
+                result.innerHTML = '<div class="status-message status-error"><i class="fas fa-wifi"></i> Network error. Please try again.</div>';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-key"></i> Get Pairing Code';
+            }
+        });
+
+        function switchToQr() {
+            document.querySelector('[data-tab="qr"]').click();
+            document.getElementById('generateQrBtn').click();
+        }
+
+        function showPhoneCode(code) {
+            document.getElementById('phoneResult').innerHTML = `
+                <div style="text-align: center;">
+                    <div class="status-message status-success">✅ Pairing Code Generated!</div>
+                    <div class="code-box" onclick="copyCode('${code}')" id="phoneCodeBox">
+                        <i class="fas fa-key"></i> ${code}
+                    </div>
+                    <div class="hint">Click the code to copy it</div>
+                    <div style="margin-top: 15px; font-size: 0.8rem; color: var(--light);">
+                        <i class="fas fa-mobile-alt"></i> 
+                        Go to WhatsApp → Linked Devices → Link a Device → Enter this code
+                    </div>
+                </div>
+            `;
+        }
+
+        function copyCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                const codeBox = document.getElementById('phoneCodeBox');
+                if (codeBox) {
+                    codeBox.classList.add('copied');
+                    codeBox.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    setTimeout(() => {
+                        codeBox.classList.remove('copied');
+                        codeBox.innerHTML = `<i class="fas fa-key"></i> ${code}`;
+                    }, 2000);
+                }
+            });
+        }
+
+        function checkQrConnectionStatus(sessionId) {
+            const qrStatus = document.getElementById('qrStatus');
+            let checks = 0;
+            const maxChecks = 60; // 2 minutes max
+
+            const interval = setInterval(async () => {
+                checks++;
+                
+                if (checks >= maxChecks) {
+                    clearInterval(interval);
+                    qrStatus.innerHTML = '<div class="status-message status-error"><i class="fas fa-clock"></i> QR code expired. Generate a new one.</div>';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/code/status/${sessionId}`);
+                    const data = await response.json();
+                    
+                    if (data.connected) {
+                        qrStatus.innerHTML = '<div class="status-message status-success"><i class="fas fa-check-circle"></i> ✅ WhatsApp connected successfully!</div>';
+                        clearInterval(interval);
+                    }
+                } catch (error) {
+                    // Ignore status check errors
+                }
+            }, 2000);
+        }
+
+        // Phone number formatting
+        document.getElementById('phoneNumber').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 2 && value.length <= 7) {
+                value = value.slice(0, 2) + ' ' + value.slice(2);
+            } else if (value.length > 7) {
+                value = value.slice(0, 2) + ' ' + value.slice(2, 7) + ' ' + value.slice(7, 10);
+            }
+            e.target.value = value;
+        });
+
+        // Enter key support
+        document.getElementById('phoneNumber').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('getCodeBtn').click();
+            }
+        });
+
         // Auto-play background music
         function playBackgroundMusic() {
             const audio = document.getElementById('bgMusic');
-            audio.volume = 0.3; // Set volume to 30%
+            audio.volume = 0.3;
             
-            // Auto-play with user interaction
             const playAudio = () => {
-                audio.play().catch(e => {
-                    console.log('Auto-play prevented, waiting for user interaction');
-                });
+                audio.play().catch(e => console.log('Auto-play prevented'));
             };
             
-            // Try to play immediately
             playAudio();
-            
-            // Also try on user interaction
-            document.addEventListener('click', () => {
-                playAudio();
-            }, { once: true });
-            
-            document.addEventListener('touchstart', () => {
-                playAudio();
-            }, { once: true });
-            
-            document.addEventListener('keydown', () => {
-                playAudio();
-            }, { once: true });
+            document.addEventListener('click', playAudio, { once: true });
         }
 
         // Initialize
         createParticles();
         playBackgroundMusic();
+        
+        // Auto-focus on phone number when phone tab is active
+        document.querySelector('[data-tab="phone"]').addEventListener('click', () => {
+            setTimeout(() => {
+                document.getElementById('phoneNumber').focus();
+            }, 100);
+        });
     </script>
 </body>
 </html>
