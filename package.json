@@ -1,21 +1,79 @@
 {
   "name": "dtz-nova-x-md",
-  "version": "1.0.0",
-  "description": "DTZ NOVA X MD WhatsApp Bot",
+  "version": "2.0.0",
+  "description": "DTZ NOVA X MD - Advanced WhatsApp Bot with QR Code and Phone Pairing",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "node index.js"
+    "dev": "node index.js",
+    "test": "echo \"No tests specified\" && exit 0",
+    "build": "echo \"No build process required\""
+  },
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "multidevice",
+    "automation",
+    "qr-code",
+    "pairing",
+    "baileys",
+    "whatsapp-api"
+  ],
+  "author": {
+    "name": "Dulina Nethmira",
+    "email": "dnethmira9@gmail.com",
+    "url": "https://wa.me/94752978237"
+  },
+  "contributors": [
+    {
+      "name": "SUPUNMDInfo",
+      "url": "https://github.com/alpha-x-team-ofc"
+    }
+  ],
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alpha-x-team-ofc/DTZ-NOVA-X-MD"
+  },
+  "homepage": "https://github.com/alpha-x-team-ofc/DTZ-NOVA-X-MD#readme",
+  "bugs": {
+    "url": "https://github.com/alpha-x-team-ofc/DTZ-NOVA-X-MD/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "^6.6.0",
     "express": "^4.21.2",
     "body-parser": "^1.20.3",
     "pino": "^9.5.0",
+    "qrcode": "^1.5.4",
     "dotenv": "^16.4.5"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  }
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "peerDependencies": {},
+  "bundledDependencies": [],
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "index.js",
+    "pair.js",
+    "main.html",
+    "pair.html",
+    ".env.example",
+    "README.md"
+  ],
+  "os": [
+    "linux",
+    "darwin",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ]
 }
